@@ -7,4 +7,15 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+##You do not need to replicate ALL of the analyses presented in the paper, but at minimum you must replicate at least 3 analyses, including at least one descriptive statistical analysis and one inferential statistical analysis. As part of this assignment, you must also replicate to the best of your abilities at least one figure.
 
+#Descriptive statistical analysis: All host preferences of mites from y-maze experiments. These are essentially the proportion of y-mazes in which the group A fly was infected.
+
+#Inferential statistical analysis: Sex differences. To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models.
+
+#Other analysis: Host reproductive status. A binomial test (binom.test) was used to test if mites 
+disproportionately infected mated or virgin females.
+
+#Figure: Fig. 2. Fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity. C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum,.
+
+#Include short description of the study and of the specific data and replication analyses you will be performing, to orient your reader. Outline (briefly) the goal of the original paper, the data set used, and the analyses conducted, then describe which you will replicate. You should also demonstrate how you read your datafile into R, and show a few lines of raw data in your output (e.g., using head()).
