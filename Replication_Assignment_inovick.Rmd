@@ -6,8 +6,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-##You do not need to replicate ALL of the analyses presented in the paper, but at minimum you must replicate at least 3 analyses, including at least one descriptive statistical analysis and one inferential statistical analysis. As part of this assignment, you must also replicate to the best of your abilities at least one figure.
+##Instructions##
+#You do not need to replicate ALL of the analyses presented in the paper, but at minimum you must replicate at least 3 analyses, including at least one descriptive statistical analysis and one inferential statistical analysis. As part of this assignment, you must also replicate to the best of your abilities at least one figure.
 
 #Descriptive statistical analysis: All host preferences of mites from y-maze experiments. These are essentially the proportion of y-mazes in which the group A fly was infected.
 
@@ -19,3 +19,23 @@ disproportionately infected mated or virgin females.
 #Figure: Fig. 2. Fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity. C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum,.
 
 #Include short description of the study and of the specific data and replication analyses you will be performing, to orient your reader. Outline (briefly) the goal of the original paper, the data set used, and the analyses conducted, then describe which you will replicate. You should also demonstrate how you read your datafile into R, and show a few lines of raw data in your output (e.g., using head()).
+
+##Step 1. Reading the data into R:
+#The data was available on Dryad as an .xlsx with 4 distinct tabs, holding different sets of data. I converted each tab to a .csv format, so now I have 4 different .csv files. These are respirometry data for male and female flies at rest, respirometry data for males and females exposed to mites, respirometry data for mated and virgin females at rest, and respirometry data for mated and virgin females exposed to mites. I have assigned each of them a name.
+```{r}
+mf_rest <- read.csv("Respirometry_data_male_and_female_at_rest.csv")
+mf_exposed <- read.csv("Respirometry_data_male_and_female_exposed_to_mite.csv")
+fem_rest <- read.csv("Respirometry_data_mated_and_virgin_females_rest.csv")
+fem_exposed <- read.csv("Respirometry_data_mated_and_virgin_exposed.csv")
+```
+
+##Step 2. Load packages:
+```{r}
+
+```
+
+##Step 3. Descriptive statistical analysis: Taking the average weight of male and female flies. 
+#From section 3.1.1 in results. The result found in the study was that males on average weighed 2.35 ± 0.09 mg and females weighed 2.86 ± 0.15 mg, a 19.6% difference. The provided data does not include a variable for mite infection, so it's only possible to find descriptive statistics of what was provided in Dryad.
+```{r}
+
+```
