@@ -55,6 +55,7 @@ summary(mf_exposed) #Use summary to get an idea of the data
 male_exposed <- mf_exposed %>% filter(Sex == "M")
 male_exposed
 summary(male_exposed)
+mean(male_exposed$Mass)
 
 std.error(male_exposed$Mass)
 ```
@@ -64,14 +65,75 @@ std.error(male_exposed$Mass)
 fem_exposed <- mf_exposed %>% filter(Sex == "F")
 fem_exposed
 summary(fem_exposed)
+mean(fem_exposed$Mass)
 
 std.error(fem_exposed$Mass)
 ```
 #Mean mass for exposed females is 2.48, and standard error is 0.06 mg. Awesome!
 
+##Step 4. Inferential statistical analysis: Sex differences. 
+
+"To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models.
+
+The MR of unexposed flies was best described with a normal distribution upon visual inspection, thus the lmer function was used for modeling. Unexposed females (N = 36) had substantially higher CO2 production rates than males (N = 36), 0.063 ± 0.003 μL/min versus 0.053 ± 0.003 μL/min respectively (16.3% higher), and sex was a 
+significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012) (Fig. 2a)
+
+The MR of the flies exposed to mites was best described using a gamma distribution (glmer, family=”Gamma”). In the exposed treatment,  the  MR  of  male  (0.073 ± 0.008  μL/min)  and  female (0.073 ± 0.007 μL/min) flies were nearly identical, and sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)"
+
+#look at module 18 for this
+#Looking at the MR of unexposed flies (at rest) and comparing differences based on sex using lmer function:
+```{r}
+
+```
+
+#Looking at MR of exposed flies and comparing differences based on sex using gmer function:
+```{r}
+
+```
 
 
+#Comparing exposed and exposed males and females using ANOVA function (test=χ2) for lmer models and Wald t-statistic for glmer models:
+```{r}
 
+```
+
+#Recreating this figure: (insert link to picture)
+```{r}
+fem_exposed_mr <- fem_exposed$CO2.prod.uL.min
+fem_rest_mr <- fem_rest$CO2.prod.uL.min
+male_exposed_mr <- male_exposed$CO2.prod.uL.min
+male_rest_mr <- male_rest$CO2.prod.uL.min
+
+boxplot(fem_exposed_mr, fem_rest_mr, male_exposed_mr, male_rest_mr)
+
+# create a data frame
+variety=rep(LETTERS[1:7])
+treatment=rep(c("high","low"),each=20)
+note=seq(1:280)+sample(1:150, 280, replace=T)
+data=data.frame(variety, treatment ,  note)
+ 
+# grouped boxplot
+ggplot(data, aes(x=variety, y=note, fill=treatment)) + 
+    geom_boxplot()
+
+DF2 <- data.frame(
+  x = c(c(A1, A2, A3), c(B1, B2, B3)),
+  y = rep(c("A", "B"), each = 15),
+  z = rep(rep(1:3, each=5), 2),
+  stringsAsFactors = FALSE
+)
+str(DF2)
+# 'data.frame': 30 obs. of  3 variables:
+#  $ x: num  1 2 9 6 4 5 1 9 2 3 ...
+#  $ y: chr  "A" "A" "A" "A" ...
+#  $ z: int  1 1 1 1 1 2 2 2 2 2 ...
+
+cols <- rainbow(3, s = 0.5)
+boxplot(x ~ z + y, data = DF2,
+        at = c(1:3, 5:7), col = cols,
+        names = c("", "A", "", "", "B", ""), xaxs = FALSE)
+legend("topleft", fill = cols, legend = c(1,2,3), horiz = T)
+```
 
 
 
