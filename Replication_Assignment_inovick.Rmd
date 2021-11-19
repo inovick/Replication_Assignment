@@ -23,19 +23,73 @@ disproportionately infected mated or virgin females.
 ##Step 1. Reading the data into R:
 #The data was available on Dryad as an .xlsx with 4 distinct tabs, holding different sets of data. I converted each tab to a .csv format, so now I have 4 different .csv files. These are respirometry data for male and female flies at rest, respirometry data for males and females exposed to mites, respirometry data for mated and virgin females at rest, and respirometry data for mated and virgin females exposed to mites. I have assigned each of them a name.
 ```{r}
-mf_rest <- read.csv("Respirometry_data_male_and_female_at_rest.csv")
-mf_exposed <- read.csv("Respirometry_data_male_and_female_exposed_to_mite.csv")
-fem_rest <- read.csv("Respirometry_data_mated_and_virgin_females_rest.csv")
-fem_exposed <- read.csv("Respirometry_data_mated_and_virgin_exposed.csv")
+mf_rest <- read.csv("Respirometry_data_male_and_female_at_rest.csv", header = TRUE, stringsAsFactors = FALSE)
+head(mf_rest)
+
+mf_exposed <- read.csv("Respirometry_data_male_and_female_exposed_to_mite.csv", header = TRUE, stringsAsFactors = FALSE)
+head(mf_exposed)
+
+fem_rest <- read.csv("Respirometry_data_mated_and_virgin_females_rest.csv", header = TRUE, stringsAsFactors = FALSE)
+head(fem_rest)
+
+fem_exposed <- read.csv("Respirometry_data_mated_and_virgin_exposed.csv", header = TRUE, stringsAsFactors = FALSE)
+head(fem_exposed)
 ```
 
-##Step 2. Load packages:
+##Step 2. Load packages (or install them if I don't have them yet):
 ```{r}
-
+library(ggplot2)
+library(stats)
+library(lme4)
+library(dplyr)
+install.packages("plotrix")
+library(plotrix)
 ```
 
-##Step 3. Descriptive statistical analysis: Taking the average weight of male and female flies. 
-#From section 3.1.1 in results. The result found in the study was that males on average weighed 2.35 ± 0.09 mg and females weighed 2.86 ± 0.15 mg, a 19.6% difference. The provided data does not include a variable for mite infection, so it's only possible to find descriptive statistics of what was provided in Dryad.
+##Step 3. Descriptive statistical analysis: Taking the average weight of exposed male and female flies. 
+#From section 3.2.1 in results. Female flies in the exposed experiment on average had 24% higher 
+masses than male flies, 2.48 ± 0.06 mg and 1.95 ± 0.03 mg respectively. 
 ```{r}
+summary(mf_exposed) #Use summary to get an idea of the data
 
+male_exposed <- mf_exposed %>% filter(Sex == "M")
+male_exposed
+summary(male_exposed)
+
+std.error(male_exposed$Mass)
 ```
+#Mean mass for exposed males is 1.945, and standard error is 0.03 mg. It worked! Yeehaw! Now for the females:
+
+```{r}
+fem_exposed <- mf_exposed %>% filter(Sex == "F")
+fem_exposed
+summary(fem_exposed)
+
+std.error(fem_exposed$Mass)
+```
+#Mean mass for exposed females is 2.48, and standard error is 0.06 mg. Awesome!
+
+
+
+
+
+
+
+
+
+###Stuff that didn't work...
+
+#Calculating average weight for male flies at rest:
+```{r}
+male_rest <- mf_rest %>% filter(Sex == "M")
+male_rest
+summary(male_rest)
+```
+#Mean mass for males at rest is 2.208, which is closer, but still not the same. I will now try combining all males, both exposed and at rest, to see if I can get the same mean from the study. Since they are in two different .csv files, I will try and combine them into one column using the merge function.
+
+#The merge function did not work for me, so I instead created a new .csv file by copying and pasting values from excel to create a combined file of males at rest and exposed:
+```{r}
+male_combined <- read.csv("combined_mf.csv", header = TRUE, stringsAsFactors = FALSE)
+summary(male_combined$Mass)
+```
+#Mean mass of all males is 2.093, not 2.35
