@@ -44,6 +44,8 @@ library(lme4)
 library(dplyr)
 install.packages("plotrix")
 library(plotrix)
+install.packages("lmerTest")
+library(lmerTest)
 ```
 
 ##Step 3. Descriptive statistical analysis: Taking the average weight of exposed male and female flies. 
@@ -83,16 +85,22 @@ The MR of the flies exposed to mites was best described using a gamma distributi
 ###From Collin Horn: I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values).
 
 So for the situation looking at fly sex without mites I made a model. Fly age is related to batch, btw.
+```{r}
 
-#> EEErestMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch),data=MFRestdata)
+EEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + Mass +(chamber|batch), data = mf_rest)
+EEErestMF
+```
+##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function
+```{r}
+EEEexpMF <- glmer(CO2.prod.uL.min ~ Age + Sex + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
+EEEexpMF
+```
 
-##With the exposed condition the data was slightly right skewed and we used a Gamma distribution
-
-#> EEEexpMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch), family="Gamma", data=MFexpdata).
-###Our flies are sexually dimorphic (females are typically heavier). That motivated me to run two different MEM
-
-#> massEEErestMF<- lmer(CO2.prod.uL.min~Age+Mass+chamber+(1|batch),data=MFRestdata)
-#> summary(massEEErestMF)
+###Our flies are sexually dimorphic (females are typically heavier). That motivated me to run two different mixed efects models (MEM)
+```{r}
+massEEErestMF <- lmer(CO2.prod.uL.min ~ Age + Mass + chamber + (1|batch), data= mf_rest)
+summary(massEEErestMF)
+```
 Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
 Formula: CO2.prod.uL.min ~ Age + Mass + chamber + (1 | batch)
    Data: MFRestdata
@@ -116,9 +124,11 @@ Age          0.0022451  0.0006146  4.5926158   3.653  0.01707 *
 Mass         0.0052076  0.0047864 67.9091407   1.088  0.28044    
 chamber     -0.0020577  0.0005790 63.9814777  -3.554  0.00072 ***
 
-
-#> sexEEErestMF<- lmer(CO2.prod.uL.min~Age+Sex+chamber+(1|batch),data=MFRestdata)
-#> summary(sexEEErestMF)
+#Based on sex
+```{r}
+sexEEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + chamber + (1|batch), data= mf_rest)
+summary(sexEEErestMF)
+```
 Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
 Formula: CO2.prod.uL.min ~ Age + Sex + chamber + (1 | batch)
    Data: MFRestdata
