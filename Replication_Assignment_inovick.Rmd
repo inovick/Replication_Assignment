@@ -82,7 +82,7 @@ The MR of the flies exposed to mites was best described using a gamma distributi
 
 ###From Collin Horn: I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values).
 
-So for the situation looking at fly sex without mites I made a model
+So for the situation looking at fly sex without mites I made a model. Fly age is related to batch, btw.
 
 #> EEErestMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch),data=MFRestdata)
 
