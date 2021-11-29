@@ -80,21 +80,22 @@ significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012) (
 
 The MR of the flies exposed to mites was best described using a gamma distribution (glmer, family=”Gamma”). In the exposed treatment,  the  MR  of  male  (0.073 ± 0.008  μL/min)  and  female (0.073 ± 0.007 μL/min) flies were nearly identical, and sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)"
 
-#look at module 18 for this
+#look at module 18 for this-- random intercept and random slope?
 #Looking at the MR of unexposed flies (at rest) and comparing differences based on sex using lmer function:
 ```{r}
-
+lme <- lmer(data = d, duration ~ reprocondition + parity + (1 | subject))
+summary(lme)
 ```
 
 #Looking at MR of exposed flies and comparing differences based on sex using gmer function:
 ```{r}
-
+(glmer, family = "Gamma")
 ```
 
 
 #Comparing exposed and exposed males and females using ANOVA function (test=χ2) for lmer models and Wald t-statistic for glmer models:
 ```{r}
-
+anova(reduced, full, test = "Chisq")
 ```
 
 #Recreating this figure: (insert link to picture)
@@ -106,15 +107,17 @@ male_rest_mr <- male_rest$CO2.prod.uL.min
 
 boxplot(fem_exposed_mr, fem_rest_mr, male_exposed_mr, male_rest_mr)
 
-# create a data frame
-variety=rep(LETTERS[1:7])
-treatment=rep(c("high","low"),each=20)
-note=seq(1:280)+sample(1:150, 280, replace=T)
-data=data.frame(variety, treatment ,  note)
- 
-# grouped boxplot
-ggplot(data, aes(x=variety, y=note, fill=treatment)) + 
-    geom_boxplot()
+    
+    
+DF <- data.frame(fem_exposed_mr, fem_rest_mr, male_exposed_mr, male_rest_mr)
+
+ggplot() + 
+  geom_boxplot(data = df, mapping = aes(col_name, value, fill=index))  + 
+  theme( axis.text.x = element_blank()) +
+  geom_segment(data=hline1, mapping=aes(x=1, y=-0.5, xend=3, yend=-0.5), size=2) +
+  annotate("text", x = 2, y = -1, label = "A") + 
+  geom_segment(data=hline1, mapping=aes(x=4, y=-0.5, xend=6, yend=-0.5), size=2) +
+  annotate("text", x = 5, y = -1, label = "B")   
 
 DF2 <- data.frame(
   x = c(c(A1, A2, A3), c(B1, B2, B3)),
