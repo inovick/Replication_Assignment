@@ -80,6 +80,78 @@ significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012) (
 
 The MR of the flies exposed to mites was best described using a gamma distribution (glmer, family=”Gamma”). In the exposed treatment,  the  MR  of  male  (0.073 ± 0.008  μL/min)  and  female (0.073 ± 0.007 μL/min) flies were nearly identical, and sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)"
 
+###From Collin Horn: I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values).
+
+So for the situation looking at fly sex without mites I made a model
+
+#> EEErestMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch),data=MFRestdata)
+
+##With the exposed condition the data was slightly right skewed and we used a Gamma distribution
+
+#> EEEexpMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch), family="Gamma", data=MFexpdata).
+###Our flies are sexually dimorphic (females are typically heavier). That motivated me to run two different MEM
+
+#> massEEErestMF<- lmer(CO2.prod.uL.min~Age+Mass+chamber+(1|batch),data=MFRestdata)
+#> summary(massEEErestMF)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: CO2.prod.uL.min ~ Age + Mass + chamber + (1 | batch)
+   Data: MFRestdata
+
+REML criterion at convergence: -339.8
+
+Scaled residuals:
+     Min       1Q   Median       3Q      Max
+-2.52532 -0.64051  0.02341  0.57266  2.58492
+
+Random effects:
+ Groups   Name        Variance  Std.Dev.
+ batch    (Intercept) 1.057e-05 0.003251
+ Residual             2.860e-04 0.016911
+Number of obs: 72, groups:  batch, 6
+
+Fixed effects:
+              Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)  0.0255411  0.0167658 28.6698918   1.523  0.13861    
+Age          0.0022451  0.0006146  4.5926158   3.653  0.01707 *  
+Mass         0.0052076  0.0047864 67.9091407   1.088  0.28044    
+chamber     -0.0020577  0.0005790 63.9814777  -3.554  0.00072 ***
+
+
+#> sexEEErestMF<- lmer(CO2.prod.uL.min~Age+Sex+chamber+(1|batch),data=MFRestdata)
+#> summary(sexEEErestMF)
+Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
+Formula: CO2.prod.uL.min ~ Age + Sex + chamber + (1 | batch)
+   Data: MFRestdata
+
+REML criterion at convergence: -344.1
+
+Scaled residuals:
+     Min       1Q   Median       3Q      Max
+-2.35390 -0.62481 -0.01316  0.61877  2.90688
+
+Random effects:
+ Groups   Name        Variance  Std.Dev.
+ batch    (Intercept) 1.765e-05 0.004201
+ Residual             2.635e-04 0.016234
+Number of obs: 72, groups:  batch, 6
+
+Fixed effects:
+              Estimate Std. Error         df t value Pr(>|t|)    
+(Intercept)  0.0450120  0.0106003  5.5007490   4.246 0.006566 **
+Age          0.0020453  0.0006294  3.9999995   3.250 0.031387 *  
+SexM        -0.0094350  0.0038263 64.0000007  -2.466 0.016360 *  
+chamber     -0.0020097  0.0005542 64.0000007  -3.626 0.000571 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+        (Intr) Age    SexM  
+Age     -0.891              
+SexM    -0.180  0.000      
+chamber -0.340  0.000  0.000
+###
+
+
 #look at module 18 for this-- random intercept and random slope?
 #Looking at the MR of unexposed flies (at rest) and comparing differences based on sex using lmer function:
 ```{r}
