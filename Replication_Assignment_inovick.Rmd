@@ -86,20 +86,24 @@ The MR of the flies exposed to mites was best described using a gamma distributi
 
 So for the situation looking at fly sex without mites I made a model. Fly age is related to batch, btw.
 ```{r}
-
 EEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + Mass +(chamber|batch), data = mf_rest)
 EEErestMF
+anova(EEErestMF, test = 'Chisq')
 ```
 ##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function
 ```{r}
 EEEexpMF <- glmer(CO2.prod.uL.min ~ Age + Sex + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
 EEEexpMF
+
+anova(EEEexpMF, test = 'Wald')
 ```
 
+##Third statistical test: Mixed effects modeling to control for sexual dimorphism. Females are typically heavier.
 ###Our flies are sexually dimorphic (females are typically heavier). That motivated me to run two different mixed efects models (MEM)
 ```{r}
 massEEErestMF <- lmer(CO2.prod.uL.min ~ Age + Mass + chamber + (1|batch), data= mf_rest)
 summary(massEEErestMF)
+anova(massEEErestMF, test = 'Chisq')
 ```
 Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
 Formula: CO2.prod.uL.min ~ Age + Mass + chamber + (1 | batch)
@@ -128,6 +132,7 @@ chamber     -0.0020577  0.0005790 63.9814777  -3.554  0.00072 ***
 ```{r}
 sexEEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + chamber + (1|batch), data= mf_rest)
 summary(sexEEErestMF)
+anova(sexEEErestMF, test = 'Chisq')
 ```
 Linear mixed model fit by REML. t-tests use Satterthwaite's method ['lmerModLmerTest']
 Formula: CO2.prod.uL.min ~ Age + Sex + chamber + (1 | batch)
@@ -160,25 +165,6 @@ Age     -0.891
 SexM    -0.180  0.000      
 chamber -0.340  0.000  0.000
 ###
-
-
-#look at module 18 for this-- random intercept and random slope?
-#Looking at the MR of unexposed flies (at rest) and comparing differences based on sex using lmer function:
-```{r}
-lme <- lmer(data = d, duration ~ reprocondition + parity + (1 | subject))
-summary(lme)
-```
-
-#Looking at MR of exposed flies and comparing differences based on sex using gmer function:
-```{r}
-(glmer, family = "Gamma")
-```
-
-
-#Comparing exposed and exposed males and females using ANOVA function (test=χ2) for lmer models and Wald t-statistic for glmer models:
-```{r}
-anova(reduced, full, test = "Chisq")
-```
 
 #Recreating this figure: (insert link to picture)
 ```{r}
