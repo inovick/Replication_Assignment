@@ -180,7 +180,17 @@ male_rest_mr <- read.csv("male_rest_mr.csv", header = TRUE, stringsAsFactors = F
 
 boxplot(fem_exposed_mr, fem_rest_mr, male_exposed_mr, male_rest_mr)
 
-    
+fem_exposed_mr$CO2.prod.uL.min <- as.factor(fem_exposed_mr$CO2.prod.uL.min )
+head(fem_exposed_mr)
+
+fem_rest_mr$CO2.prod.uL.min <- as.factor(fem_rest_mr$CO2.prod.uL.min )
+head(fem_rest_mr)
+
+male_exposed_mr$CO2.prod.uL.min <- as.factor(male_exposed_mr$CO2.prod.uL.min )
+head(male_exposed_mr)
+
+male_rest_mr$CO2.prod.uL.min <- as.factor(male_rest_mr$CO2.prod.uL.min )
+head(male_rest_mr)
   
 library(ggplot2)
 ggplot() + 
