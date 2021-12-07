@@ -19,8 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #Inferential statistical analysis: Sex differences. To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models.
 
-#Other analysis: Host reproductive status. A binomial test (binom.test) was used to test if mites 
-disproportionately infected mated or virgin females.
+#Other analysis: Mating status. MR response of mated and virgin females to mite risk.
 
 #Figure: Fig. 2. Fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity. C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum,.
 
@@ -99,13 +98,87 @@ significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012) (
 The MR of the flies exposed to mites was best described using a gamma distribution (glmer, family=”Gamma”). In the exposed treatment,  the  MR  of  male  (0.073 ± 0.008  μL/min)  and  female (0.073 ± 0.007 μL/min) flies were nearly identical, and sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)"
 
 ###From Collin Horn: I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values).
+##My response: Using lmertest is giving me somewhat different results than what was published in the paper, since when the paper was written, several anovas were done instead. So I am going to do a bunch of anovas to try and get the same answer.
 
 So for the situation looking at fly sex without mites I made a model. Fly age is related to batch, btw.
 ```{r}
 EEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + Mass +(chamber|batch), data = mf_rest)
 EEErestMF
+summary(EEErestMF)
 anova(EEErestMF, test = 'Chisq')
 ```
+
+#First getting the summary for lmertest at rest using mass as a predictor, then making lmertest at rest without mass, and doing an anova
+```{r}
+restdocmass <-lmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), data = mf_rest)
+summary(restdocmass)
+
+restdocnomass <- lmer(CO2.prod.uL.min ~ Act + chamber +(batch| Age), data = mf_rest)
+summary(restdocnomass)
+
+anova(restdocmass, restdocnomass)
+```
+#Using sex as a predictor:
+```{r}
+restsex <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch | Age), data = mf_rest)
+summary(restsex)
+```
+#Using Akaike Information Criterion to estimate prediction error:
+```{r}
+AIC(restsex, restdocmass)
+```
+#From this, we can see that sex is a better predictor than mass.
+
+#Sex included vs. sex not included
+```{r}
+restsex <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch | Age), data = mf_rest)
+restnosex <- lmer(CO2.prod.uL.min ~ Act + chamber + (batch | Age), data = mf_rest)
+summary(restnosex)
+
+anova(restsex, restnosex)
+```
+#Comparing sex including and not including activity
+```{r}
+sexnoact <- lmer(CO2.prod.uL.min ~ Sex + chamber + (batch | Age), data = mf_rest)
+summary(sexnoact)
+anova(restsex, sexnoact)
+
+#This is new minimal model
+```
+#Comparing sex including chamber and excluding chamber:
+```{r}
+sexnocham <- lmer(CO2.prod.uL.min ~ Sex + Act + (batch | Age), data = mf_rest)
+summary(sexnocham)
+
+anova(restsex, sexnocham)
+```
+#Comparing no activity in model using sex as predictor, and no activity and no sex:
+```{r}
+nosexact <- lmer(CO2.prod.uL.min ~ chamber + (batch | Age), data = mf_rest)
+summary(nosexact)
+
+anova(sexnoact, nosexact)
+```
+#Comparing no activity and no chamber to no activity with sex as a predictor
+```{r}
+sexnoactcham <- lmer(CO2.prod.uL.min ~ Sex + (batch | Age), data = mf_rest)
+
+anova(sexnoact, sexnoactcham)
+```
+#Doing a Shapiro-Wilk normality test:
+```{r}
+shapiro.test(resid(sexnoact))
+```
+#Histogram of CO2 respirometry:
+```{r}
+CO2_Production <- mf_rest$CO2.prod.uL.min
+hist(CO2_Production, plot = TRUE)
+```
+
+
+
+
+
 ##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function
 ```{r}
 EEEexpMF <- glmer(CO2.prod.uL.min ~ Age + Sex + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
