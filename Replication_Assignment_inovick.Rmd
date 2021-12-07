@@ -6,10 +6,16 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-##Instructions##
-#You do not need to replicate ALL of the analyses presented in the paper, but at minimum you must replicate at least 3 analyses, including at least one descriptive statistical analysis and one inferential statistical analysis. As part of this assignment, you must also replicate to the best of your abilities at least one figure.
+#####
 
-#Descriptive statistical analysis: All host preferences of mites from y-maze experiments. These are essentially the proportion of y-mazes in which the group A fly was infected.
+#####
+
+##Introduction
+#   The study containing the analyses I am attempting to replicate is "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" by Horn et al, 2020. This study investigates non-consumptive effects of parasites (using ectoparasite Macrocheles subbadius) on potential hosts (Drosophila nigrospiracula). The authors use metabolic rate (MR) of host flies as a proxy for perceived risk of mite infection, recording the rate of CO2 production. They test two mutually exclusive hypotheses: either uneven costs of infection result in adaptions for stronger metabolic responses to mite exposure, or uneven risks of infection result in adaptions for stronger metabolic responses to mite exposure. Male flies will have higher cost of being parasitized due to their lower body mass compared to female flies. Virgin female flies will have a higher cost of being parasitized compared to mated females. These differences also affect infection risk, as mites preferentially infect female flies over males, and mated females over virgin females.
+  The dataset used in this study recorded data in the following categories: individual code, respirometry chamber, sex, mass, CO2 production in ml/min, VCOsd, age, activity in voltage, mite infection, and batch. Not all of these variables are investigated in my replication analysis. The tests performed in this study are age-matched and pair-wise choice tests, binomial tests, linear mixed effects models using the lmer function, generalized linear mixed effects models using the glmer function, and backwards model selection. Additionally, after performing an lmer test, the anova function was used to compare models, and the Wald t-statistic test was used for comparing glmer models as they are in a Gamma distribution. The study also uses a Shapiro test on the residuals of models for normality.
+  
+  The analyses that I will be replicating are as follows:
+#Descriptive statistical analysis: Taking average weight of exposed male and female flies.
 
 #Inferential statistical analysis: Sex differences. To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models.
 
@@ -18,20 +24,30 @@ disproportionately infected mated or virgin females.
 
 #Figure: Fig. 2. Fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity. C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum,.
 
-#Include short description of the study and of the specific data and replication analyses you will be performing, to orient your reader. Outline (briefly) the goal of the original paper, the data set used, and the analyses conducted, then describe which you will replicate. You should also demonstrate how you read your datafile into R, and show a few lines of raw data in your output (e.g., using head()).
 
 ##Step 1. Reading the data into R:
-#The data was available on Dryad as an .xlsx with 4 distinct tabs, holding different sets of data. I converted each tab to a .csv format, so now I have 4 different .csv files. These are respirometry data for male and female flies at rest, respirometry data for males and females exposed to mites, respirometry data for mated and virgin females at rest, and respirometry data for mated and virgin females exposed to mites. I have assigned each of them a name.
+#The data was available on Dryad as an .xlsx with 4 distinct tabs, holding different sets of data. I converted each tab to a .csv format, so now I have 4 different .csv files. Eventually I ended up splitting these further into more .csv files, containing each variable separately to help with analysis. These original files are respirometry data for male and female flies at rest, respirometry data for males and females exposed to mites, respirometry data for mated and virgin females at rest, and respirometry data for mated and virgin females exposed to mites. I have assigned each of them a name.
+
+#Loading in respirometry data for male and female flies at rest:
 ```{r}
 mf_rest <- read.csv("Respirometry_data_male_and_female_at_rest.csv", header = TRUE, stringsAsFactors = FALSE)
 head(mf_rest)
+```
 
+#Loading in respirometry data for males and females exposed to mites:
+```{r}
 mf_exposed <- read.csv("Respirometry_data_male_and_female_exposed_to_mite.csv", header = TRUE, stringsAsFactors = FALSE)
 head(mf_exposed)
+```
 
+#Loading in respirometry data for mated and virgin females at rest:
+```{r}
 fem_rest <- read.csv("Respirometry_data_mated_and_virgin_females_rest.csv", header = TRUE, stringsAsFactors = FALSE)
 head(fem_rest)
+```
 
+#Loading in respirometry data for mated and virgin females exposed to mites:
+```{r}
 fem_exposed <- read.csv("Respirometry_data_mated_and_virgin_exposed.csv", header = TRUE, stringsAsFactors = FALSE)
 head(fem_exposed)
 ```
