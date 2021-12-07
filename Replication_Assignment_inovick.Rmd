@@ -17,9 +17,13 @@ knitr::opts_chunk$set(echo = TRUE)
   The analyses that I will be replicating are as follows:
 #Descriptive statistical analysis: Taking average weight of exposed male and female flies.
 
-#Inferential statistical analysis: Sex differences. To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models.
+#Inferential statistical analysis: Sex differences. To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models. I did lmer tests on the unexposed group, and then ran anovas to compare those models. I only compared variables of unexposed flies to see which variables are good predictors.
 
-#Other analysis: Mating status. MR response of mated and virgin females to mite risk.
+#Other analysis: Mating status. MR response of mated and virgin females to mite risk. I will do lmer test on mated and virgin females.
+
+#Other OTHER analysis: Shapiro-Wilk test of normality
+
+#SUPER OTHER other analysis: AIC to compare prediction error between models
 
 #Figure: Fig. 2. Fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity. C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum,.
 
@@ -61,6 +65,8 @@ install.packages("plotrix")
 library(plotrix)
 install.packages("lmerTest")
 library(lmerTest)
+install.packages("aod")
+library(aod)
 ```
 
 ##Step 3. Descriptive statistical analysis: Taking the average weight of exposed male and female flies. 
@@ -92,23 +98,26 @@ std.error(fem_exposed$Mass)
 
 "To test which fly sex has a stronger response to parasites we measured the rate of CO2 production, a proxy for metabolic rate, of male and female flies either unexposed or exposed to mites using flow-through respirometry. Model comparison was carried out with the anova function (test=χ2) for lmer models and the Wald t-statistic for glmer models.
 
-The MR of unexposed flies was best described with a normal distribution upon visual inspection, thus the lmer function was used for modeling. Unexposed females (N = 36) had substantially higher CO2 production rates than males (N = 36), 0.063 ± 0.003 μL/min versus 0.053 ± 0.003 μL/min respectively (16.3% higher), and sex was a 
-significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012) (Fig. 2a)
-
 The MR of the flies exposed to mites was best described using a gamma distribution (glmer, family=”Gamma”). In the exposed treatment,  the  MR  of  male  (0.073 ± 0.008  μL/min)  and  female (0.073 ± 0.007 μL/min) flies were nearly identical, and sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)"
 
 ###From Collin Horn: I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values).
-##My response: Using lmertest is giving me somewhat different results than what was published in the paper, since when the paper was written, several anovas were done instead. So I am going to do a bunch of anovas to try and get the same answer.
+##My response: Using lmertest is giving me somewhat different results than what was published in the paper, since the paper was written using several anovas originally. So I am going to do a bunch of anovas to try and get the same answer.
 
 So for the situation looking at fly sex without mites I made a model. Fly age is related to batch, btw.
 ```{r}
-EEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + Mass +(chamber|batch), data = mf_rest)
+EEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + Mass +(batch|Age), data = mf_rest)
 EEErestMF
 summary(EEErestMF)
-anova(EEErestMF, test = 'Chisq')
+anova(EEErestMF)
 ```
+#"Mass  is  not  a  significant  predictor  of  MR (χ2<0.001, P = 0.99)": 
+```{r}
+lmernomass <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber +(batch|Age), data = mf_rest)
+lmer <- lmer(CO2.prod.uL.min ~ Mass + Sex + Act + chamber +(batch|Age), data = mf_rest)
 
-#First getting the summary for lmertest at rest using mass as a predictor, then making lmertest at rest without mass, and doing an anova
+anova(lmer, lmernomass)
+```
+#"Nor was mass a significant predictor in models without sex (χ2=0.43, P = 0.51)." This one includes mass as a predictor and excludes sex for both, excluding mass for one:
 ```{r}
 restdocmass <-lmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), data = mf_rest)
 summary(restdocmass)
@@ -118,18 +127,19 @@ summary(restdocnomass)
 
 anova(restdocmass, restdocnomass)
 ```
-#Using sex as a predictor:
+
+#Using sex as a predictor, excluding mass:
 ```{r}
 restsex <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch | Age), data = mf_rest)
 summary(restsex)
 ```
-#Using Akaike Information Criterion to estimate prediction error:
+#Using Akaike Information Criterion to estimate prediction error. This is to see if sex or mass are better predictors.
 ```{r}
 AIC(restsex, restdocmass)
 ```
-#From this, we can see that sex is a better predictor than mass.
+#From this, we can see that sex is a better predictor than mass. We do separate tests of mass and sex to avoid colinearity because of sexual dimorphism and the large difference in mass between the sexes.
 
-#Sex included vs. sex not included
+#Sex is a significant predictor of MR among unexposed flies (at rest): "The MR of unexposed flies was best described with a normal distribution upon visual inspection, thus the lmer function was used for modeling. Unexposed females (N = 36) had substantially higher CO2 production rates than males (N = 36), 0.063 ± 0.003 μL/min versus 0.053 ± 0.003 μL/min respectively (16.3% higher), and sex was a significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012). Success!
 ```{r}
 restsex <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch | Age), data = mf_rest)
 restnosex <- lmer(CO2.prod.uL.min ~ Act + chamber + (batch | Age), data = mf_rest)
@@ -137,7 +147,8 @@ summary(restnosex)
 
 anova(restsex, restnosex)
 ```
-#Comparing sex including and not including activity
+
+#Comparing sex including and excluding activity, looking at activity as a predictor. Not included in study but trying to be thorough.
 ```{r}
 sexnoact <- lmer(CO2.prod.uL.min ~ Sex + chamber + (batch | Age), data = mf_rest)
 summary(sexnoact)
@@ -145,6 +156,8 @@ anova(restsex, sexnoact)
 
 #This is new minimal model
 ```
+
+##"Respirometry chamber was a significant predictor of MR (χ2=12.3, P = 0.0004)."
 #Comparing sex including chamber and excluding chamber:
 ```{r}
 sexnocham <- lmer(CO2.prod.uL.min ~ Sex + Act + (batch | Age), data = mf_rest)
@@ -152,6 +165,15 @@ summary(sexnocham)
 
 anova(restsex, sexnocham)
 ```
+#P-value is the same, and chisq value is very close (they got 12.3, I got 12.6). I got some kind of error that maximum number of function evaluations exceeded, so I have to think that has something to do with the discrepancy. I will try it with including mass as well:
+
+```{r}
+lmernocham <- lmer(CO2.prod.uL.min ~ Mass + Sex + Act + (batch| Age), data = mf_rest)
+
+anova(lmer, lmernocham)
+```
+#Close but not exactly, probably because of an error saying the model is failing to converge with 7  negative eigenvalues. This gives a p-value of 0.0002 and a chisq value of 13.556, so I think it was originally done by excluding mass like my first attempt. 
+
 #Comparing no activity in model using sex as predictor, and no activity and no sex:
 ```{r}
 nosexact <- lmer(CO2.prod.uL.min ~ chamber + (batch | Age), data = mf_rest)
@@ -165,7 +187,8 @@ sexnoactcham <- lmer(CO2.prod.uL.min ~ Sex + (batch | Age), data = mf_rest)
 
 anova(sexnoact, sexnoactcham)
 ```
-#Doing a Shapiro-Wilk normality test:
+
+#Additional statistical test: Doing a Shapiro-Wilk normality test:
 ```{r}
 shapiro.test(resid(sexnoact))
 ```
@@ -179,12 +202,31 @@ hist(CO2_Production, plot = TRUE)
 
 
 
-##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function
+##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function. Trying to figure out how to get t statistic
 ```{r}
 EEEexpMF <- glmer(CO2.prod.uL.min ~ Age + Sex + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
 EEEexpMF
 
-anova(EEEexpMF, test = 'Wald')
+glmer <- glmer(CO2.prod.uL.min ~ Sex + Act + Mass + Age +(chamber|batch), family= "Gamma", data = mf_exposed)
+glmer
+
+summary(glmer)
+glmernosex <- glmer(CO2.prod.uL.min ~ Act + Age + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
+glmernosex
+summary(glmernosex)
+anova(glmer, glmernosex, test = "Wald")
+wald.test(glmer, glmernosex, Terms = mf_exposed$sex)
+summary(glmernosex, glmer)
+
+EEEexpMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch), data=mf_exposed)
+summary(EEEexpMF)
+
+glmernosex<- lmer(CO2.prod.uL.min~Age+Mass+(chamber|batch), data=mf_exposed)
+summary(glmernosex)
+
+glmernomass <-lmer(CO2.prod.uL.min~Age+Sex+(chamber|batch), data=mf_exposed)
+summary(glmernomass)
+
 ```
 
 ##Third statistical test: Mixed effects modeling to control for sexual dimorphism. Females are typically heavier.
