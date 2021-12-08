@@ -202,23 +202,25 @@ hist(CO2_Production, plot = TRUE)
 
 
 
-##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function. Trying to figure out how to get t statistic
+##With the exposed condition the data was slightly right skewed and we used a Gamma distribution and the glmer function. Trying to figure out how to get t statistic and fucking around with glmer
 ```{r}
 EEEexpMF <- glmer(CO2.prod.uL.min ~ Age + Sex + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
 EEEexpMF
 
-glmer <- glmer(CO2.prod.uL.min ~ Sex + Act + Mass + Age +(chamber|batch), family= "Gamma", data = mf_exposed)
+glmer <- glmer(CO2.prod.uL.min ~ Sex + Act + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
 glmer
 
 summary(glmer)
-glmernosex <- glmer(CO2.prod.uL.min ~ Act + Age + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
+glmernosex <- glmer(CO2.prod.uL.min ~ Act + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
 glmernosex
 summary(glmernosex)
 anova(glmer, glmernosex, test = "Wald")
 wald.test(glmer, glmernosex, Terms = mf_exposed$sex)
 summary(glmernosex, glmer)
 
-EEEexpMF<- lmer(CO2.prod.uL.min~Age+Sex+Mass+(chamber|batch), data=mf_exposed)
+glmernomass <- glmer(CO2.prod.uL.min ~ Act + Sex + (chamber|batch), family= "Gamma", data = mf_exposed)
+summary(glmernomass)
+EEEexpMF<- lmer(CO2.prod.uL.min~+Sex+Mass+(chamber|batch), data=mf_exposed)
 summary(EEEexpMF)
 
 glmernosex<- lmer(CO2.prod.uL.min~Age+Mass+(chamber|batch), data=mf_exposed)
@@ -228,6 +230,45 @@ glmernomass <-lmer(CO2.prod.uL.min~Age+Sex+(chamber|batch), data=mf_exposed)
 summary(glmernomass)
 
 ```
+##Exposed treatment: mass specific analysis from Collin Horn's exposed analysis doc. fucking around:
+```{r}
+expmassglmer <- glmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), family= "Gamma", data = mf_exposed)
+summary(expmassglmer)
+
+ulminmg ~ Sex * Act + chamber + (batch | date)
+Ulmin ~ Mass * Sex + Act + chamber + (batch | date)
+expplusglmer <- glmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+summary(expplusglmer)
+
+Formula: ulminmg ~ Sex + Act + chamber + (batch | date)
+
+shapiro.test(resid(expplusglmer))
+```
+##The issue with glmer is that in the paper, there was a designated variable "date" and in the data on dryad, the variable is age, which has a different numerical value (3) as opposed to date (2). This has affected my results and I have not been able to replicate them exactly. Collin describes this as an "oversight" but says that age should work the same. But it doesn't. It's close! But it's not exactly the same. So that's what we're working with right now.
+
+#This one was the closest to the results in the paper: "sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)
+```{r}
+glmertry <- glmer(CO2.prod.uL.min ~ Mass * Sex + Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+
+summary(glmertry)
+Ulmin ~ Mass * Sex + Act + chamber + (batch | date)
+```
+
+#Using chamber as a predictor, no sex, no mass. "chamber was a significant predictor in the exposed condition model of MR (Wald t = 5.84, P<0.0001)." Also shows that activity is significant if in the paper they are using the absolute value of the t-statistic: "activity was a significant predictor of MR (Wald t = 4.47, P<0.0001)."
+```{r}
+glmercham <- glmer(CO2.prod.uL.min * 100 ~ Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+summary(glmercham)
+
+Formula: Ulmin * 100 ~ Act + chamber + (batch | date)
+```
+#Also close, only if we're using the absolute value of the wald t statistic. "In models with mass as a predictor, but not sex, mass significantly predicted MR in the exposed condition (Wald t = 2.27, P = 0.023)."
+```{r}
+expmassglmer <- glmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), family= "Gamma", data = mf_exposed)
+summary(expmassglmer)
+```
+
+
+
 
 ##Third statistical test: Mixed effects modeling to control for sexual dimorphism. Females are typically heavier.
 ###Our flies are sexually dimorphic (females are typically heavier). That motivated me to run two different mixed efects models (MEM)
