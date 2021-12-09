@@ -339,26 +339,42 @@ chamber -0.340  0.000  0.000
 ###
 
 #Recreating the figure
-#CO2 at rest
+#CO2 male and female
 ```{r}
-mf_CO2 <- read.csv("mf_CO2.csv", header = TRUE, stringsAsFactors = FALSE)
+mf_rest1 <- read.csv("mf_CO2_2.csv", header = TRUE, stringsAsFactors = FALSE)
 
-boxplot(mf_CO2)
-exposed <- c(mf_CO2$Male.exposed, mf_CO2$Female.exposed)
-head(mf_rest)
+#define variables
+treatment=rep(c('Exposed', 'Unexposed'), 'Exposed'=56, 'Unexposed'=72)
+Sex=rep(c('Male', 'Female'), each=64)
+CO2=mf_rest1$CO2
 
+data=data.frame(treatment, Sex, CO2)
+summary(data)
 
-
-library(ggplot2)
-ggplot() + 
-  geom_boxplot(data = mf_rest, mapping = aes(x=Sex, y=CO2.prod.uL.min, fill=Sex))  + 
-  theme( axis.text.x = element_blank()) +
-  geom_segment(data= mf_rest, mapping=aes(x=1, y=-0.5, xend=3, yend=-0.5), size=2) +
-  annotate("Text", x = 2, y = -1, label = "Unexposed") + 
-  geom_segment(data= mf_rest, mapping=aes(x=4, y=-0.5, xend=6, yend=-0.5), size=2) +
-  annotate("Text", x = 5, y = -1, label = "Exposed")
+ggplot(data, aes(x=treatment, y=CO2, fill=Sex)) + 
+  geom_boxplot()
 ```
 
+#Activity male and female
+```{r}
+mf_rest_act <- read.csv("mf_act_2.csv", header = TRUE, stringsAsFactors = FALSE)
+
+#define variables
+treatment=rep(c('Exposed', 'Unexposed'), 'Exposed'=56, 'Unexposed'=72)
+Sex=rep(c('Male', 'Female'), each=64)
+Activity=mf_rest_act$Activity
+
+data=data.frame(treatment, Sex, Activity)
+summary(data)
+
+ggplot(data, aes(x=treatment, y=Activity, fill=Sex)) + 
+  geom_boxplot()
+
+```
+#CO2 virgin and mated
+```{r}
+
+```
 
 #Recreating this figure: (insert link to picture) this did not work
 ```{r}
