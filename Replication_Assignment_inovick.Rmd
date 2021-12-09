@@ -338,7 +338,29 @@ SexM    -0.180  0.000
 chamber -0.340  0.000  0.000
 ###
 
-#Recreating this figure: (insert link to picture)
+#Recreating the figure
+#CO2 at rest
+```{r}
+mf_CO2 <- read.csv("mf_CO2.csv", header = TRUE, stringsAsFactors = FALSE)
+
+boxplot(mf_CO2)
+exposed <- c(mf_CO2$Male.exposed, mf_CO2$Female.exposed)
+head(mf_rest)
+
+
+
+library(ggplot2)
+ggplot() + 
+  geom_boxplot(data = mf_rest, mapping = aes(x=Sex, y=CO2.prod.uL.min, fill=Sex))  + 
+  theme( axis.text.x = element_blank()) +
+  geom_segment(data= mf_rest, mapping=aes(x=1, y=-0.5, xend=3, yend=-0.5), size=2) +
+  annotate("Text", x = 2, y = -1, label = "Unexposed") + 
+  geom_segment(data= mf_rest, mapping=aes(x=4, y=-0.5, xend=6, yend=-0.5), size=2) +
+  annotate("Text", x = 5, y = -1, label = "Exposed")
+```
+
+
+#Recreating this figure: (insert link to picture) this did not work
 ```{r}
 fem_exposed_mr <- fem_exposed$CO2.prod.uL.min
 fem_rest_mr <- fem_rest$CO2.prod.uL.min
