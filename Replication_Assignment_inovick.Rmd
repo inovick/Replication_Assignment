@@ -371,9 +371,20 @@ ggplot(data, aes(x=treatment, y=Activity, fill=Sex)) +
   geom_boxplot()
 
 ```
-#CO2 virgin and mated
+#CO2 virgin and mated. Differing number of rows here which gave me trouble, so I got rid of one of the exposed virgins with an activity level "NA". This did not work.
 ```{r}
+fem_CO2 <- read.csv("fem_CO2_2.csv", header = TRUE, stringsAsFactors = FALSE)
 
+#define variables
+treatment=rep(c('Exposed', 'Unexposed'), 'Exposed'=69, 'Unexposed'=55)
+Virginity_status=rep(c('Virgin', 'Mated'), each=62)
+CO2=fem_CO2$CO2
+
+data=data.frame(treatment, Virginity_status, CO2)
+summary(data)
+
+ggplot(data, aes(x=treatment, y=CO2, fill=Virginity_status)) + 
+  geom_boxplot()
 ```
 
 #Recreating this figure: (insert link to picture) this did not work
