@@ -7,22 +7,414 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+###Introduction
+#   The study containing the analyses I am attempting to replicate is "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" by Horn et al, 2020. This study investigates non-consumptive effects of parasites (using ectoparasite Macrocheles subbadius) on potential hosts (Drosophila nigrospiracula). The authors use metabolic rate (MR) of host flies as a proxy for perceived risk of mite infection, recording the rate of CO2 production. They test two mutually exclusive hypotheses: either uneven costs of infection result in adaptions for stronger metabolic responses to mite exposure, or uneven risks of infection result in adaptions for stronger metabolic responses to mite exposure. Male flies will have higher cost of being parasitized due to their lower body mass compared to female flies. Virgin female flies will have a higher cost of being parasitized compared to mated females. These differences also affect infection risk, as mites preferentially infect female flies over males, and mated females over virgin females.
+  The dataset used in this study recorded data in the following categories: individual code, respirometry chamber, sex, mass, CO2 production in ml/min, VCOsd, age, activity in voltage, mite infection, and batch. Datasets were split up not only by sex (male vs. female, mated vs. virgin females) but also by exposure to mites. In these analyses, "exposure" denotes being exposed to the parasitic mite, and "unexposed" or "at rest" are used interchangeably to mean having no contact with mites. Additionally, not all of these variables are investigated in my replication analysis. The tests performed in this study are age-matched and pair-wise choice tests, binomial tests, linear mixed effects models using the lmer function, generalized linear mixed effects models using the glmer function, and backwards model selection. Additionally, after performing an lmer test, the anova function was used to compare models, and the Wald t-statistic test was used for comparing glmer models as they are in a Gamma distribution. The study also uses a Shapiro-Wilk test on the residuals of models for normality.
+  One last, very important note to make before beginning the analyses: I was able to get in contact with Collin Horn, the PhD candidate responsible for this paper (first author, so of course not completely responsible). He was an incredibly helpful and lovely man who sent me pages of his workflow for this project. Those documents can be found in this repo as well. He helped me through much of the glmer stuff, as well as some of the lmer stuff, and gave lots of helpful information about any discrepancies in the data. This whole replication analysis would have been much messier and would not been nearly as thorough if not for this guy's help. Thank you, Collin! This was a really cool study and I enjoyed trying my best to replicate it!
+  
+###Analyses  
+#The analyses that I will be replicating are as follows:
+##Descriptive statistical analysis: 
+#Taking average weight and standard error of exposed male and female flies.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+##Inferential statistical analysis: 
+#Examining predictive variables of metabolic rate for unexposed male and female flies using lmer. This allows us to see which variables were significant predictors of metabolic rate, such as sex or mass. Model comparison was carried out with the anova function (test=χ2) for lmer models. The authors and I did lmer tests on the unexposed group, and then ran anovas to compare those models. I only compared variables of unexposed flies using the lmer function to see which variables are good predictors.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+##Other analysis: 
+#Examining predictive variables of metabolic rate for exposed male and female flies using glmer. The authors and I used the glmer function on the exposed group, due to its Gamma distribution, to look for predictive variables of MR. Model comparison was carried out with the Wald t-statistic for glmer models. For both lmer and glmer analyses, mass and sex were separated to avoid colinearity, as there is sexual dimorphism and female flies are larger.
 
-```{r cars}
-summary(cars)
+##Other OTHER analysis: 
+#Shapiro-Wilk test of normality. This is done on one lmer model and one glmer model
+
+##SUPER OTHER other analysis: 
+#Akaike Information Criterion (AIC) to compare prediction error between models and to establish which model (sex or mass) uses a more effective predictive variable.
+
+##Figure: 
+#Figure 2. Grouped boxplot of fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity (although I did not remove any males, as none of them displayed any egregious levels of activity. Perhaps it was removed already and the dataset on dryad did not have it at all). C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum. I will only be replicating A and B plots.
+
+##Other figure: 
+#I also replicated a histogram of metabolic rate of male and female flies at rest. This histogram was not included in the actual paper, but was included in the supplementary materials that were shared with me.
+
+
+###Step 1. Reading the data into R:
+#The data was available on Dryad as an .xlsx with 4 distinct tabs, holding different sets of data. I converted each tab to a .csv format, so now I have 4 different .csv files. Eventually I ended up splitting these further into more .csv files, containing each variable separately to help with analysis. These original files are respirometry data for male and female flies at rest, respirometry data for males and females exposed to mites, respirometry data for mated and virgin females at rest, and respirometry data for mated and virgin females exposed to mites. I have assigned each of them a name.
+
+#Loading in respirometry data for male and female flies at rest:
+```{r}
+mf_rest <- read.csv("Respirometry_data_male_and_female_at_rest.csv", header = TRUE, stringsAsFactors = FALSE)
+head(mf_rest)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+#Loading in respirometry data for males and females exposed to mites:
+```{r}
+mf_exposed <- read.csv("Respirometry_data_male_and_female_exposed_to_mite.csv", header = TRUE, stringsAsFactors = FALSE)
+head(mf_exposed)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Loading in respirometry data for mated and virgin females at rest:
+```{r}
+fem_rest <- read.csv("Respirometry_data_mated_and_virgin_females_rest.csv", header = TRUE, stringsAsFactors = FALSE)
+head(fem_rest)
+```
+
+#Loading in respirometry data for mated and virgin females exposed to mites:
+```{r}
+fem_exposed <- read.csv("Respirometry_data_mated_and_virgin_exposed.csv", header = TRUE, stringsAsFactors = FALSE)
+head(fem_exposed)
+```
+
+###Step 2
+#Load packages (or install them if I don't have them yet):
+```{r}
+library(ggplot2)
+library(stats)
+library(lme4)
+library(dplyr)
+install.packages("plotrix")
+library(plotrix)
+install.packages("lmerTest")
+library(lmerTest)
+install.packages("aod")
+library(aod)
+```
+
+###Step 3. Descriptive statistical analysis: Taking the average weight of exposed male and female flies. 
+#From section 3.2.1 in results: Female flies in the exposed experiment on average had 24% higher 
+masses than male flies, 2.48 ± 0.06 mg and 1.95 ± 0.03 mg respectively. 
+```{r}
+summary(mf_exposed) #Use summary to get an idea of the data
+
+male_exposed <- mf_exposed %>% filter(Sex == "M")
+male_exposed
+summary(male_exposed)
+mean(male_exposed$Mass)
+
+std.error(male_exposed$Mass)
+```
+#My result: Mean mass for exposed males is 1.945, and standard error is 0.03 mg. It worked! Yeehaw! 
+
+#Now for the females:
+```{r}
+fem_exposed <- mf_exposed %>% filter(Sex == "F")
+fem_exposed
+summary(fem_exposed)
+mean(fem_exposed$Mass)
+
+std.error(fem_exposed$Mass)
+```
+#My result: Mean mass for exposed females is 2.48, and standard error is 0.06 mg. Awesome!
+
+###Step 4. Inferential statistical analysis: Linear mixed-effects modelling of sex differences on MR 
+#Using  the lmer function, the authors and I examined predictive variables of unexposed flies. Model comparison was carried out with the anova function (test=χ2) for lmer models.
+
+#Note from Collin Horn: "I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values)."
+#My response: Using lmertest is giving me somewhat different results than what was published in the paper, since the paper was written using several anovas originally. So I am going to do a bunch of anovas to try and get the same answer (at least for the unexposed treatment).
+
+##From Results section 3.2.1. 
+#"Mass  is  not  a  significant  predictor  of  MR (χ2<0.001, P = 0.99)": 
+```{r}
+lmernomass <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber +(batch|Age), data = mf_rest)
+lmer <- lmer(CO2.prod.uL.min ~ Mass + Sex + Act + chamber +(batch|Age), data = mf_rest)
+
+anova(lmer, lmernomass)
+```
+
+#"Nor was mass a significant predictor in models without sex (χ2=0.43, P = 0.51)." This particular test includes mass as a predictor and excludes sex for both, excluding mass for one:
+```{r}
+restdocmass <-lmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), data = mf_rest)
+summary(restdocmass)
+
+restdocnomass <- lmer(CO2.prod.uL.min ~ Act + chamber +(batch| Age), data = mf_rest)
+summary(restdocnomass)
+
+anova(restdocmass, restdocnomass)
+```
+
+#Using sex as a predictor, excluding mass. This will be used in the AIC to determine which model is a better predictor of MR:
+```{r}
+restsex <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch | Age), data = mf_rest)
+summary(restsex)
+```
+
+#Using Akaike Information Criterion to estimate prediction error. This is to see if sex or mass are better predictors.
+```{r}
+AIC(restsex, restdocmass)
+```
+#From this, we can see that sex is a better predictor than mass. We do separate tests of mass and sex to avoid colinearity because of sexual dimorphism and the large difference in mass between the sexes.
+
+#Sex is a significant predictor of MR among unexposed flies (at rest): "The MR of unexposed flies was best described with a normal distribution upon visual inspection, thus the lmer function was used for modeling. Unexposed females (N = 36) had substantially higher CO2 production rates than males (N = 36), 0.063 ± 0.003 μL/min versus 0.053 ± 0.003 μL/min respectively (16.3% higher), and sex was a significant  predictor  of  MR  among  unexposed  flies  (χ2=6.34, P = 0.012)." Success!
+```{r}
+restsex <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch | Age), data = mf_rest)
+restnosex <- lmer(CO2.prod.uL.min ~ Act + chamber + (batch | Age), data = mf_rest)
+summary(restnosex)
+
+anova(restsex, restnosex)
+```
+
+#Comparing sex including and excluding activity, looking at activity as a predictor. Not included in study but trying to be thorough.
+```{r}
+sexnoact <- lmer(CO2.prod.uL.min ~ Sex + chamber + (batch | Age), data = mf_rest)
+summary(sexnoact)
+anova(restsex, sexnoact)
+```
+
+#"Respirometry chamber was a significant predictor of MR (χ2=12.3, P = 0.0004)." Here, we are seeing if respirometry chamber is a significant predictor of MR:
+```{r}
+sexnocham <- lmer(CO2.prod.uL.min ~ Sex + Act + (batch | Age), data = mf_rest)
+summary(sexnocham)
+
+anova(restsex, sexnocham)
+```
+#P-value is the same, and chisq value is very close (they got 12.3, I got 12.6). I got some kind of error that maximum number of function evaluations exceeded, so I have to think that has something to do with the discrepancy. I will try it with including mass as well to see if this is perhaps the code used to examine the variable "chamber":
+
+```{r}
+lmernocham <- lmer(CO2.prod.uL.min ~ Mass + Sex + Act + (batch| Age), data = mf_rest)
+
+anova(lmer, lmernocham)
+```
+#Close but not exactly, probably because of an error saying the model is failing to converge with 7  negative eigenvalues. This gives a p-value of 0.0002 and a chisq value of 13.556, so I think it was originally done by excluding mass like my first attempt. 
+
+#Comparing exclusion of activity in model using sex as predictor, and no activity and no sex:
+```{r}
+nosexact <- lmer(CO2.prod.uL.min ~ chamber + (batch | Age), data = mf_rest)
+summary(nosexact)
+
+anova(sexnoact, nosexact)
+```
+
+#Comparing no activity and no chamber to no activity with sex as a predictor:
+```{r}
+sexnoactcham <- lmer(CO2.prod.uL.min ~ Sex + (batch | Age), data = mf_rest)
+
+anova(sexnoact, sexnoactcham)
+```
+
+##Additional statistical test: Doing a Shapiro-Wilk normality test on the model using sex as a predictor and excluding activity:
+```{r}
+shapiro.test(resid(sexnoact))
+```
+#This yields the same result as in the supplementary material (W = 0.99123, p-value = 0.902). Success!
+
+##Extra figure: Histogram of CO2 respirometry:
+![]("img/MR_Histogram.png")
+```{r}
+CO2_Production <- mf_rest$CO2.prod.uL.min
+hist(CO2_Production, plot = TRUE)
+```
+
+##The issue with glmer is that in the paper, there was a designated variable "date" and in the data on dryad, the variable is age, which has a different numerical value (3) as opposed to date (2). This has affected my results and I have not been able to replicate them exactly. Collin describes this as an "oversight" but says that age should work the same. But it doesn't. It's close! But it's not exactly the same. So that's what we're working with right now.
+
+#This one was the closest to the results in the paper: "sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)
+```{r}
+glmertry <- glmer(CO2.prod.uL.min ~ Mass * Sex + Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+
+summary(glmertry)
+Ulmin ~ Mass * Sex + Act + chamber + (batch | date)
+```
+
+###Step 5. Additional inferential statistical analysis: Genralized linear mixed-effects modelling of sex differences on MR
+
+#The issue I've been having with glmer is that in the paper, there was a designated variable "date" and in the data on dryad, the variable is age, which has a different numerical value (3) as opposed to date (2). This was also the case for the lmer models, but the numerical values were the same due to there being two ages, so there were fewer problems. Although I do think that difference is responsible for the earlier errors. This has affected my results and I have not been able to replicate them exactly. Collin describes this as an "oversight" but says that age should work the same. But it doesn't. It's close! But it's not exactly the same. So that's what we're working with right now. On a different note, the authors gave the absolute value of the Wald t-statistic, so all of the resulting negative t-statistics are given in their absolute values in this analysis,
+
+#From Results section 3.2.1. This test was the closest to the results in the paper: "sex was not a significant predictor of MR (Wald t = 0.24, P = 0.81)." 
+```{r}
+glmertry <- glmer(CO2.prod.uL.min ~ Mass * Sex + Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+
+summary(glmertry)
+Ulmin ~ Mass * Sex + Act + chamber + (batch | date)
+```
+#This test was pretty close to the results in the paper, my results being t=0.22 and p=0.82. Not bad.
+
+#Here we are using chamber as a predictor, no sex, no mass. "Chamber was a significant predictor in the exposed condition model of MR (Wald t = 5.84, P<0.0001)." This also shows that activity is significant (when using the absolute value of the t-statistic): "activity was a significant predictor of MR (Wald t = 4.47, P<0.0001)."
+```{r}
+glmercham <- glmer(CO2.prod.uL.min * 100 ~ Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+summary(glmercham)
+
+Formula: Ulmin * 100 ~ Act + chamber + (batch | date)
+```
+#This test was also pretty close. My results for chamber as a predictor: t=5.85, p= <0.0001. My results for activity as a predictor: t=4.47 (absolute value), p= <0.0001.
+
+#"In models with mass as a predictor, but not sex, mass significantly predicted MR in the exposed condition (Wald t = 2.27, P = 0.023)."
+```{r}
+expmassglmer <- glmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), family= "Gamma", data = mf_exposed)
+summary(expmassglmer)
+```
+#Also close, my results being t=2.19 (absolute), p=0.028. Not exactly, but as close as I could get it.
+
+###Recreating figures A and B from Figure 2
+##Grouped boxplot of fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites.
+#Figure A:
+```{r}
+mf_rest1 <- read.csv("mf_CO2_2.csv", header = TRUE, stringsAsFactors = FALSE)
+
+#define variables
+treatment=rep(c('Exposed', 'Unexposed'), 'Exposed'=56, 'Unexposed'=72)
+Sex=rep(c('Male', 'Female'), each=64)
+CO2=mf_rest1$CO2
+
+data=data.frame(treatment, Sex, CO2)
+summary(data)
+
+ggplot(data, aes(x=treatment, y=CO2, fill=Sex)) + 
+  geom_boxplot()
+```
+
+#Figure B:
+```{r}
+mf_rest_act <- read.csv("mf_act_2.csv", header = TRUE, stringsAsFactors = FALSE)
+
+#define variables
+treatment=rep(c('Exposed', 'Unexposed'), 'Exposed'=56, 'Unexposed'=72)
+Sex=rep(c('Male', 'Female'), each=64)
+Activity=mf_rest_act$Activity
+
+data=data.frame(treatment, Sex, Activity)
+summary(data)
+
+ggplot(data, aes(x=treatment, y=Activity, fill=Sex)) + 
+  geom_boxplot()
+
+```
+
+###Concluding Remarks
+#Replication of scientific analyses is a cornerstone to scientific research. If the analyses are not reproducible, it may not bode well for the overall reliability of the study. Fortunately, "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" was relatively reproducible, even for an Rstudio novice like me. While there were a few hiccups, such as using the "age" variable as a proxy for the original "date", as well as excluding the results of the "Y-maze experiment" (I did not mention this because these data were just not part of the available dataset on dryad), there were no egregious differences. I'm guessing that most of the discrepancies were due to my intermediate skill at coding and statistics, especially when considering the grouped boxplots. It also speaks well of the authors for being so generous with their material and so willing to answer the questions of a stranger. They, too, must value highly the degree of replicability in a scientific study.
+
+###Blooper Reel!!
+#Here's the stuff that just... didn't work.
+
+#CO2 virgin and mated. Differing number of rows here which gave me trouble, so I got rid of one of the exposed virgins with an activity level "NA". This did not work.
+```{r}
+fem_CO2 <- read.csv("fem_CO2_2.csv", header = TRUE, stringsAsFactors = FALSE)
+
+#define variables
+treatment=rep(c('Exposed', 'Unexposed'), 'Exposed'=69, 'Unexposed'=55)
+Virginity_status=rep(c('Virgin', 'Mated'), each=62)
+CO2=fem_CO2$CO2
+
+data=data.frame(treatment, Virginity_status, CO2)
+summary(data)
+
+ggplot(data, aes(x=treatment, y=CO2, fill=Virginity_status)) + 
+  geom_boxplot()
+```
+
+#Trying more with ggplot. This did not work. Created what feels like a thousand csvs to organize the data, but at what cost... at what cost.
+```{r}
+fem_exposed_mr <- fem_exposed$CO2.prod.uL.min
+fem_rest_mr <- fem_rest$CO2.prod.uL.min
+male_exposed_mr <- male_exposed$CO2.prod.uL.min
+male_rest_mr <- male_rest$CO2.prod.uL.min
+
+fem_exposed_mr <- read.csv("fem_exposed_mr.csv", header = TRUE, stringsAsFactors = FALSE)
+fem_rest_mr <- read.csv("fem_rest_mr.csv", header = TRUE, stringsAsFactors = FALSE)
+male_exposed_mr <- read.csv("male_exposed_mr.csv", header = TRUE, stringsAsFactors = FALSE)
+male_rest_mr <- read.csv("male_rest_mr.csv", header = TRUE, stringsAsFactors = FALSE)
+
+boxplot(fem_exposed_mr, fem_rest_mr, male_exposed_mr, male_rest_mr)
+
+fem_exposed_mr$CO2.prod.uL.min <- as.factor(fem_exposed_mr$CO2.prod.uL.min )
+head(fem_exposed_mr)
+
+fem_rest_mr$CO2.prod.uL.min <- as.factor(fem_rest_mr$CO2.prod.uL.min )
+head(fem_rest_mr)
+
+male_exposed_mr$CO2.prod.uL.min <- as.factor(male_exposed_mr$CO2.prod.uL.min )
+head(male_exposed_mr)
+
+male_rest_mr$CO2.prod.uL.min <- as.factor(male_rest_mr$CO2.prod.uL.min )
+head(male_rest_mr)
+  
+library(ggplot2)
+ggplot() + 
+  geom_boxplot((data = fem_exposed_mr + fem_rest_mr + male_exposed_mr + male_rest_mr), mapping = aes(col_name, value, fill=index))  + 
+  theme( axis.text.x = element_blank()) +
+  geom_segment(data=hline1, mapping=aes(x=1, y=-0.5, xend=3, yend=-0.5), size=2) +
+  annotate("text", x = 2, y = -1, label = "A") + 
+  geom_segment(data=hline1, mapping=aes(x=4, y=-0.5, xend=6, yend=-0.5), size=2) +
+  annotate("text", x = 5, y = -1, label = "B")   
+
+
+cols <- rainbow(3, s = 0.5)
+boxplot(x ~ z + y, data = DF2,
+        at = c(1:3, 5:7), col = cols,
+        names = c("", "A", "", "", "B", ""), xaxs = FALSE)
+legend("topleft", fill = cols, legend = c(1,2,3), horiz = T)
+```
+
+#Trying to calculate average weight for male flies at rest using dplyr and merging of csvs
+```{r}
+male_rest <- mf_rest %>% filter(Sex == "M")
+male_rest
+summary(male_rest)
+```
+#Mean mass for males at rest is 2.208, which is closer, but still not the same. I will now try combining all males, both exposed and at rest, to see if I can get the same mean from the study. Since they are in two different .csv files, I will try and combine them into one column using the merge function.
+
+#The merge function did not work for me, so I instead created a new .csv file by copying and pasting values from excel to create a combined file of males at rest and exposed:
+```{r}
+male_combined <- read.csv("combined_mf.csv", header = TRUE, stringsAsFactors = FALSE)
+summary(male_combined$Mass)
+```
+#Mean mass of all males is 2.093, not 2.35. This is not what I want!!
+
+#Mixed effects modeling to control for sexual dimorphism. Females are typically heavier. Now running two different mixed efects models (MEM) which did not give me useful information. I did this more successfully above.
+```{r}
+massEEErestMF <- lmer(CO2.prod.uL.min ~ Age + Mass + chamber + (1|batch), data= mf_rest)
+summary(massEEErestMF)
+anova(massEEErestMF, test = 'Chisq')
+
+sexEEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + chamber + (1|batch), data= mf_rest)
+summary(sexEEErestMF)
+anova(sexEEErestMF, test = 'Chisq')
+```
+
+#Exposed treatment: mass specific analysis from Collin Horn's exposed analysis doc. Messing around with that code here:
+```{r}
+expmassglmer <- glmer(CO2.prod.uL.min ~ Mass + Act + chamber +(batch|Age), family= "Gamma", data = mf_exposed)
+summary(expmassglmer)
+
+ulminmg ~ Sex * Act + chamber + (batch | date)
+Ulmin ~ Mass * Sex + Act + chamber + (batch | date)
+expplusglmer <- glmer(CO2.prod.uL.min ~ Sex + Act + chamber + (batch|Age), family= "Gamma", data = mf_exposed)
+summary(expplusglmer)
+
+Formula: ulminmg ~ Sex + Act + chamber + (batch | date)
+
+shapiro.test(resid(expplusglmer))
+```
+
+#With the exposed condition the data was slightly right skewed so the authors used a Gamma distribution and the glmer function. Trying to figure out how to get t statistic and really trying to make glmer my friend. Why is your cousin lmer so much more agreeable? Please take a hint from her and get some lessons in etiquette!!
+```{r}
+EEEexpMF <- glmer(CO2.prod.uL.min ~ Age + Sex + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
+EEEexpMF
+
+glmer <- glmer(CO2.prod.uL.min ~ Sex + Act + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
+glmer
+
+summary(glmer)
+glmernosex <- glmer(CO2.prod.uL.min ~ Act + Mass + (chamber|batch), family= "Gamma", data = mf_exposed)
+glmernosex
+summary(glmernosex)
+anova(glmer, glmernosex, test = "Wald")
+wald.test(glmer, glmernosex, Terms = mf_exposed$sex)
+summary(glmernosex, glmer)
+
+glmernomass <- glmer(CO2.prod.uL.min ~ Act + Sex + (chamber|batch), family= "Gamma", data = mf_exposed)
+summary(glmernomass)
+EEEexpMF<- lmer(CO2.prod.uL.min~+Sex+Mass+(chamber|batch), data=mf_exposed)
+summary(EEEexpMF)
+
+glmernosex<- lmer(CO2.prod.uL.min~Age+Mass+(chamber|batch), data=mf_exposed)
+summary(glmernosex)
+
+glmernomass <-lmer(CO2.prod.uL.min~Age+Sex+(chamber|batch), data=mf_exposed)
+summary(glmernomass)
+
+```
+
+#Older code for looking at the situation of fly sex without mites. This was me trying to figure out how fly age is related to batch.
+```{r}
+EEErestMF <- lmer(CO2.prod.uL.min ~ Age + Sex + Mass +(batch|Age), data = mf_rest)
+EEErestMF
+summary(EEErestMF)
+anova(EEErestMF)
+```
