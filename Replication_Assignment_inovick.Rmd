@@ -366,7 +366,7 @@ head(male_rest_mr)
   
 library(ggplot2)
 ggplot() + 
-  geom_boxplot(data = fem_exposed_mr, fem_rest_mr, male_exposed_mr, male_rest_mr, mapping = aes(col_name, value, fill=index))  + 
+  geom_boxplot((data = fem_exposed_mr + fem_rest_mr + male_exposed_mr + male_rest_mr), mapping = aes(col_name, value, fill=index))  + 
   theme( axis.text.x = element_blank()) +
   geom_segment(data=hline1, mapping=aes(x=1, y=-0.5, xend=3, yend=-0.5), size=2) +
   annotate("text", x = 2, y = -1, label = "A") + 
