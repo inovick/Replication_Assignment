@@ -9,6 +9,8 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, error = TRUE)
 ```
 
+![gif](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/repeat%20after%20me.gif)
+
 ## Introduction
 
  The study containing the analyses I am attempting to replicate is "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" by Horn et al, 2020. This study investigates non-consumptive effects of parasites (using ectoparasite Macrocheles subbadius) on potential hosts (Drosophila nigrospiracula). The authors use metabolic rate (MR) of host flies as a proxy for perceived risk of mite infection, recording the rate of CO2 production. They test two mutually exclusive hypotheses: either uneven costs of infection result in adaptions for stronger metabolic responses to mite exposure, or uneven risks of infection result in adaptions for stronger metabolic responses to mite exposure. Male flies will have higher cost of being parasitized due to their lower body mass compared to female flies. Virgin female flies will have a higher cost of being parasitized compared to mated females. These differences also affect infection risk, as mites preferentially infect female flies over males, and mated females over virgin females.
@@ -449,3 +451,4 @@ anova(EEErestMF)
 ```
 
 ### That's all! I hope you enjoyed :-)
+![gif](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/over-officially%20ru.gif)
