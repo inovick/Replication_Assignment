@@ -196,7 +196,10 @@ shapiro.test(resid(sexnoact))
 #This yields the same result as in the supplementary material (W = 0.99123, p-value = 0.902). Success!
 
 ##Extra figure: Histogram of CO2 respirometry:
-![]("img/MR_Histogram.png")
+
+#Horn et al supplementary histogram: ![image]("img/MR_Histogram.png")
+
+#My histogram:
 ```{r}
 CO2_Production <- mf_rest$CO2.prod.uL.min
 hist(CO2_Production, plot = TRUE)
@@ -243,7 +246,10 @@ summary(expmassglmer)
 
 ###Recreating figures A and B from Figure 2
 ##Grouped boxplot of fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites.
-#Figure A:
+
+#Horn et al figure 2A: ![image]("img/CO2_Figure_A.png")
+
+#My figure 2A:
 ```{r}
 mf_rest1 <- read.csv("mf_CO2_2.csv", header = TRUE, stringsAsFactors = FALSE)
 
@@ -258,8 +264,11 @@ summary(data)
 ggplot(data, aes(x=treatment, y=CO2, fill=Sex)) + 
   geom_boxplot()
 ```
+#These graphs are obviously not exactly the same, but I believe that the same data is being shown. Instead of labelling each boxplot individually, I have a legend defining the colors of each boxplot. 
 
-#Figure B:
+#Horn et al figure 2B: ![image]("img/Activity_Figure_B.png")
+
+#My figure 2B:
 ```{r}
 mf_rest_act <- read.csv("mf_act_2.csv", header = TRUE, stringsAsFactors = FALSE)
 
