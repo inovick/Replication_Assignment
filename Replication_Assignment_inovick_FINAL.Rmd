@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, error = TRUE)
 ```
 
-![gif](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/repeat%20after%20me.gif)
+![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/repeat%20after%20me.gif)
 
 ## Introduction
 
@@ -282,9 +282,8 @@ data=data.frame(treatment, Sex, CO2)
 summary(data)
 
 ggplot(data, aes(x=treatment, y=CO2, fill=Sex)) + 
-  geom_boxplot()
+         geom_boxplot() 
 ```
- These graphs are obviously not exactly the same, but I believe that the same data is being shown. Instead of labelling each boxplot individually, I have a legend defining the colors of each boxplot. 
 
 ### Horn et al figure 2B: ![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/Activity%20Figure%20B.png)
 
@@ -305,6 +304,9 @@ ggplot(data, aes(x=treatment, y=Activity, fill=Sex)) +
 
 ```
 
+
+ These graphs are obviously not exactly the same, but I believe that the same data is being shown. Instead of labeling each boxplot individually, I have a legend defining the colors of each boxplot. 
+ 
 ## Concluding Remarks
 
  Replication of scientific analyses is a cornerstone to scientific research. If the analyses are not reproducible, it may not bode well for the overall reliability of the study. Fortunately, "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" was relatively reproducible, even for an Rstudio novice like me. While there were a few hiccups, such as using the "age" variable as a proxy for the original "date", as well as excluding the results of the "Y-maze experiment" (I did not mention this because these data were just not part of the available dataset on dryad), there were no egregious differences. I'm guessing that most of the discrepancies were due to my intermediate skill at coding and statistics, especially when considering the grouped boxplots. It also speaks well of the authors for being so generous with their material and so willing to answer the questions of a stranger. They, too, must value highly the degree of replicability in a scientific study.
@@ -451,4 +453,4 @@ anova(EEErestMF)
 ```
 
 ### That's all! I hope you enjoyed :-)
-![gif](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/over-officially%20ru.gif)
+![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/over-officially%20ru.gif)
