@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE, error = TRUE)
 ```
 
-![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/repeat%20after%20me.gif)
+![](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/repeat%20after%20me.gif)
 
 ## Introduction
 
@@ -453,4 +453,4 @@ anova(EEErestMF)
 ```
 
 ### That's all! I hope you enjoyed :-)
-![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/over-officially%20ru.gif)
+![](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/over-officially%20ru.gif)
