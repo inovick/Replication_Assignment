@@ -197,7 +197,7 @@ shapiro.test(resid(sexnoact))
 
 ##Extra figure: Histogram of CO2 respirometry:
 
-#Horn et al supplementary histogram: ![image]("img/MR_Histogram.png")
+#Horn et al supplementary histogram: ![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/MR_Histogram.png)
 
 #My histogram:
 ```{r}
@@ -247,7 +247,7 @@ summary(expmassglmer)
 ###Recreating figures A and B from Figure 2
 ##Grouped boxplot of fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites.
 
-#Horn et al figure 2A: ![image]("img/CO2_Figure_A.png")
+#Horn et al figure 2A: ![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/CO2%20Figure%20A.png)
 
 #My figure 2A:
 ```{r}
@@ -266,7 +266,7 @@ ggplot(data, aes(x=treatment, y=CO2, fill=Sex)) +
 ```
 #These graphs are obviously not exactly the same, but I believe that the same data is being shown. Instead of labelling each boxplot individually, I have a legend defining the colors of each boxplot. 
 
-#Horn et al figure 2B: ![image]("img/Activity_Figure_B.png")
+#Horn et al figure 2B: ![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/Activity%20Figure%20B.png)
 
 #My figure 2B:
 ```{r}
