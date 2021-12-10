@@ -447,6 +447,6 @@ summary(male_rest)
 #The merge function did not work for me, so I instead created a new .csv file by copying and pasting values from excel to create a combined file of males at rest and exposed:
 ```{r}
 male_combined <- read.csv("combined_mf.csv", header = TRUE, stringsAsFactors = FALSE)
-summary(male_combined$Mass)
+summary(male_combined$Mass) beep boop
 ```
 #Mean mass of all males is 2.093, not 2.35
