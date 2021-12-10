@@ -8,35 +8,46 @@ knitr::opts_chunk$set(echo = TRUE, error = TRUE)
 ```
 
 ###Introduction
+
 #   The study containing the analyses I am attempting to replicate is "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" by Horn et al, 2020. This study investigates non-consumptive effects of parasites (using ectoparasite Macrocheles subbadius) on potential hosts (Drosophila nigrospiracula). The authors use metabolic rate (MR) of host flies as a proxy for perceived risk of mite infection, recording the rate of CO2 production. They test two mutually exclusive hypotheses: either uneven costs of infection result in adaptions for stronger metabolic responses to mite exposure, or uneven risks of infection result in adaptions for stronger metabolic responses to mite exposure. Male flies will have higher cost of being parasitized due to their lower body mass compared to female flies. Virgin female flies will have a higher cost of being parasitized compared to mated females. These differences also affect infection risk, as mites preferentially infect female flies over males, and mated females over virgin females.
   The dataset used in this study recorded data in the following categories: individual code, respirometry chamber, sex, mass, CO2 production in ml/min, VCOsd, age, activity in voltage, mite infection, and batch. Datasets were split up not only by sex (male vs. female, mated vs. virgin females) but also by exposure to mites. In these analyses, "exposure" denotes being exposed to the parasitic mite, and "unexposed" or "at rest" are used interchangeably to mean having no contact with mites. Additionally, not all of these variables are investigated in my replication analysis. The tests performed in this study are age-matched and pair-wise choice tests, binomial tests, linear mixed effects models using the lmer function, generalized linear mixed effects models using the glmer function, and backwards model selection. Additionally, after performing an lmer test, the anova function was used to compare models, and the Wald t-statistic test was used for comparing glmer models as they are in a Gamma distribution. The study also uses a Shapiro-Wilk test on the residuals of models for normality.
   One last, very important note to make before beginning the analyses: I was able to get in contact with Collin Horn, the PhD candidate responsible for this paper (first author, so of course not completely responsible). He was an incredibly helpful and lovely man who sent me pages of his workflow for this project. Those documents can be found in this repo as well. He helped me through much of the glmer stuff, as well as some of the lmer stuff, and gave lots of helpful information about any discrepancies in the data. This whole replication analysis would have been much messier and would not been nearly as thorough if not for this guy's help. Thank you, Collin! This was a really cool study and I enjoyed trying my best to replicate it!
   
 ###Analyses  
+
 #The analyses that I will be replicating are as follows:
+
 ##Descriptive statistical analysis: 
+
 #Taking average weight and standard error of exposed male and female flies.
 
 ##Inferential statistical analysis: 
+
 #Examining predictive variables of metabolic rate for unexposed male and female flies using lmer. This allows us to see which variables were significant predictors of metabolic rate, such as sex or mass. Model comparison was carried out with the anova function (test=χ2) for lmer models. The authors and I did lmer tests on the unexposed group, and then ran anovas to compare those models. I only compared variables of unexposed flies using the lmer function to see which variables are good predictors.
 
 ##Other analysis: 
+
 #Examining predictive variables of metabolic rate for exposed male and female flies using glmer. The authors and I used the glmer function on the exposed group, due to its Gamma distribution, to look for predictive variables of MR. Model comparison was carried out with the Wald t-statistic for glmer models. For both lmer and glmer analyses, mass and sex were separated to avoid colinearity, as there is sexual dimorphism and female flies are larger.
 
 ##Other OTHER analysis: 
+
 #Shapiro-Wilk test of normality. This is done on one lmer model and one glmer model
 
 ##SUPER OTHER other analysis: 
+
 #Akaike Information Criterion (AIC) to compare prediction error between models and to establish which model (sex or mass) uses a more effective predictive variable.
 
 ##Figure: 
+
 #Figure 2. Grouped boxplot of fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites. One male fly was removed due to high activity (although I did not remove any males, as none of them displayed any egregious levels of activity. Perhaps it was removed already and the dataset on dryad did not have it at all). C) Metabolic rates of virgin and mated females at rest or exposed to mites. D) Activity of virgin and mated females at rest or exposed to mites. Boxplots represent minimum, 25th percentile, median, 75th percentile and maximum. I will only be replicating A and B plots.
 
 ##Other figure: 
+
 #I also replicated a histogram of metabolic rate of male and female flies at rest. This histogram was not included in the actual paper, but was included in the supplementary materials that were shared with me.
 
 
 ###Step 1. Reading the data into R:
+
 #The data was available on Dryad as an .xlsx with 4 distinct tabs, holding different sets of data. I converted each tab to a .csv format, so now I have 4 different .csv files. Eventually I ended up splitting these further into more .csv files, containing each variable separately to help with analysis. These original files are respirometry data for male and female flies at rest, respirometry data for males and females exposed to mites, respirometry data for mated and virgin females at rest, and respirometry data for mated and virgin females exposed to mites. I have assigned each of them a name.
 
 #Loading in respirometry data for male and female flies at rest:
@@ -64,6 +75,7 @@ head(fem_exposed)
 ```
 
 ###Step 2
+
 #Load packages (or install them if I don't have them yet):
 ```{r}
 library(ggplot2)
@@ -79,6 +91,7 @@ library(aod)
 ```
 
 ###Step 3. Descriptive statistical analysis: Taking the average weight of exposed male and female flies. 
+
 #From section 3.2.1 in results: Female flies in the exposed experiment on average had 24% higher 
 masses than male flies, 2.48 ± 0.06 mg and 1.95 ± 0.03 mg respectively. 
 ```{r}
@@ -105,12 +118,15 @@ std.error(fem_exposed$Mass)
 #My result: Mean mass for exposed females is 2.48, and standard error is 0.06 mg. Awesome!
 
 ###Step 4. Inferential statistical analysis: Linear mixed-effects modelling of sex differences on MR 
+
 #Using  the lmer function, the authors and I examined predictive variables of unexposed flies. Model comparison was carried out with the anova function (test=χ2) for lmer models.
 
 #Note from Collin Horn: "I use the lme4 package, and have started using lmertest instead of many anovas, it seems easier and less likely to make user errors (to retrieve P-values)."
+
 #My response: Using lmertest is giving me somewhat different results than what was published in the paper, since the paper was written using several anovas originally. So I am going to do a bunch of anovas to try and get the same answer (at least for the unexposed treatment).
 
 ##From Results section 3.2.1. 
+
 #"Mass  is  not  a  significant  predictor  of  MR (χ2<0.001, P = 0.99)": 
 ```{r}
 lmernomass <- lmer(CO2.prod.uL.min ~ Sex + Act + chamber +(batch|Age), data = mf_rest)
@@ -245,6 +261,7 @@ summary(expmassglmer)
 #Also close, my results being t=2.19 (absolute), p=0.028. Not exactly, but as close as I could get it.
 
 ###Recreating figures A and B from Figure 2
+
 ##Grouped boxplot of fly responses to mite exposure. A) Metabolic rates of male and female flies at rest or exposed to mites. B) Activity of male and female flies at rest or exposed to mites.
 
 #Horn et al figure 2A: ![image](https://raw.githubusercontent.com/inovick/Replication_Assignment/main/CO2%20Figure%20A.png)
@@ -286,9 +303,11 @@ ggplot(data, aes(x=treatment, y=Activity, fill=Sex)) +
 ```
 
 ###Concluding Remarks
+
 #Replication of scientific analyses is a cornerstone to scientific research. If the analyses are not reproducible, it may not bode well for the overall reliability of the study. Fortunately, "Extending the ecology of fear: Parasite-mediated sexual selection drives host response to parasites" was relatively reproducible, even for an Rstudio novice like me. While there were a few hiccups, such as using the "age" variable as a proxy for the original "date", as well as excluding the results of the "Y-maze experiment" (I did not mention this because these data were just not part of the available dataset on dryad), there were no egregious differences. I'm guessing that most of the discrepancies were due to my intermediate skill at coding and statistics, especially when considering the grouped boxplots. It also speaks well of the authors for being so generous with their material and so willing to answer the questions of a stranger. They, too, must value highly the degree of replicability in a scientific study.
 
 ###Blooper Reel!!
+
 #Here's the stuff that just... didn't work.
 
 #CO2 virgin and mated. Differing number of rows here which gave me trouble, so I got rid of one of the exposed virgins with an activity level "NA". This did not work.
@@ -427,3 +446,5 @@ EEErestMF
 summary(EEErestMF)
 anova(EEErestMF)
 ```
+
+#That's all! I hope you enjoyed :-)
